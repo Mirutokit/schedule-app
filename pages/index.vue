@@ -2,12 +2,39 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- ヘッダー -->
-    <header class="bg-white shadow">
-      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-800">
-          予定管理・シフトアプリ
-        </h1>
-        <div v-if="user" class="flex items-center gap-4">
+    <!-- pages/index.vue の <header> 内を更新 -->
+<header class="bg-white shadow">
+  <div class="container mx-auto px-4 py-4">
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-800">
+        予定管理・シフトアプリ
+      </h1>
+      <div v-if="user" class="flex items-center gap-4">
+        <!-- ナビゲーションメニュー -->
+        <nav class="flex gap-2">
+          <NuxtLink
+            to="/"
+            class="px-4 py-2 text-sm rounded hover:bg-gray-100"
+            active-class="bg-blue-100 text-blue-700"
+          >
+            ダッシュボード
+          </NuxtLink>
+          <NuxtLink
+            to="/calendar"
+            class="px-4 py-2 text-sm rounded hover:bg-gray-100"
+            active-class="bg-blue-100 text-blue-700"
+          >
+            カレンダー
+          </NuxtLink>
+          <NuxtLink
+            to="/history"
+            class="px-4 py-2 text-sm rounded hover:bg-gray-100"
+            active-class="bg-blue-100 text-blue-700"
+          >
+            履歴
+          </NuxtLink>
+        </nav>
+        <div class="border-l pl-4 flex items-center gap-4">
           <span class="text-sm text-gray-600">
             {{ userData?.displayName || 'ユーザー' }} さん
           </span>
@@ -19,7 +46,9 @@
           </button>
         </div>
       </div>
-    </header>
+    </div>
+  </div>
+</header>
 
     <!-- メインコンテンツ -->
     <main class="container mx-auto p-6">
