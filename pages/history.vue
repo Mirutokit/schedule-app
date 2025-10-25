@@ -3,16 +3,16 @@
   <div class="min-h-screen bg-gray-50">
     <!-- ヘッダー -->
     <header class="bg-white shadow">
-      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div class="flex items-center gap-4">
-          <NuxtLink to="/" class="text-gray-600 hover:text-gray-900">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </NuxtLink>
-          <h1 class="text-2xl font-bold text-gray-800">
-            稼働履歴
-          </h1>
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-4">
+            <NuxtLink to="/" class="text-gray-600 hover:text-gray-900">
+              ← 戻る
+            </NuxtLink>
+            <h1 class="text-2xl font-bold text-gray-800">
+              稼働履歴
+            </h1>
+          </div>
         </div>
       </div>
     </header>
@@ -21,7 +21,7 @@
     <main class="container mx-auto p-6">
       <!-- フィルター -->
       <div class="bg-white rounded-lg shadow p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- 期間選択 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -35,34 +35,7 @@
               <option value="week">今週</option>
               <option value="month">今月</option>
               <option value="3months">過去3ヶ月</option>
-              <option value="custom">カスタム</option>
             </select>
-          </div>
-
-          <!-- カスタム期間：開始日 -->
-          <div v-if="selectedPeriod === 'custom'">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              開始日
-            </label>
-            <input
-              v-model="customStartDate"
-              type="date"
-              @change="updateCustomPeriod"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <!-- カスタム期間：終了日 -->
-          <div v-if="selectedPeriod === 'custom'">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              終了日
-            </label>
-            <input
-              v-model="customEndDate"
-              type="date"
-              @change="updateCustomPeriod"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
           </div>
 
           <!-- ユーザーフィルター -->
@@ -81,6 +54,23 @@
               </option>
             </select>
           </div>
+
+          <!-- ステータスフィルター -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              ステータス
+            </label>
+            <select
+              v-model="selectedStatus"
+              @change="loadHistory"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">すべて</option>
+              <option value="scheduled">予定</option>
+              <option value="completed">完了</option>
+              <option value="cancelled">キャンセル</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -88,19 +78,19 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow p-6">
           <div class="text-sm text-gray-600 mb-1">総予定数</div>
-          <div class="text-3xl font-bold text-blue-600">{{ totalSchedules }}</div>
+          <div class="text-3xl font-bold text-blue-600">{{ stats.total }}</div>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
           <div class="text-sm text-gray-600 mb-1">完了</div>
-          <div class="text-3xl font-bold text-green-600">{{ completedSchedules }}</div>
+          <div class="text-3xl font-bold text-green-600">{{ stats.completed }}</div>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
           <div class="text-sm text-gray-600 mb-1">予定</div>
-          <div class="text-3xl font-bold text-gray-600">{{ scheduledSchedules }}</div>
+          <div class="text-3xl font-bold text-gray-600">{{ stats.scheduled }}</div>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
           <div class="text-sm text-gray-600 mb-1">キャンセル</div>
-          <div class="text-3xl font-bold text-red-600">{{ cancelledSchedules }}</div>
+          <div class="text-3xl font-bold text-red-600">{{ stats.cancelled }}</div>
         </div>
       </div>
 
@@ -145,6 +135,7 @@
                 </div>
               </div>
               
+              <!-- ステータス変更ボタン（自分の予定のみ） -->
               <div v-if="user?.uid === schedule.userId && schedule.status === 'scheduled'" class="flex gap-2">
                 <button
                   @click="markAsCompleted(schedule.id)"
@@ -181,9 +172,8 @@ const { getSchedules, getAllUsers, updateScheduleStatus } = useSchedule()
 const { user } = useAuth()
 
 const selectedPeriod = ref('month')
-const customStartDate = ref('')
-const customEndDate = ref('')
 const selectedUserId = ref('')
+const selectedStatus = ref('')
 const users = ref<any[]>([])
 const historySchedules = ref<Schedule[]>([])
 const loading = ref(false)
@@ -191,16 +181,14 @@ const startDate = ref(new Date())
 const endDate = ref(new Date())
 
 // 統計情報
-const totalSchedules = computed(() => historySchedules.value.length)
-const completedSchedules = computed(() => 
-  historySchedules.value.filter(s => s.status === 'completed').length
-)
-const scheduledSchedules = computed(() => 
-  historySchedules.value.filter(s => s.status === 'scheduled').length
-)
-const cancelledSchedules = computed(() => 
-  historySchedules.value.filter(s => s.status === 'cancelled').length
-)
+const stats = computed(() => {
+  const total = historySchedules.value.length
+  const completed = historySchedules.value.filter(s => s.status === 'completed').length
+  const scheduled = historySchedules.value.filter(s => s.status === 'scheduled').length
+  const cancelled = historySchedules.value.filter(s => s.status === 'cancelled').length
+  
+  return { total, completed, scheduled, cancelled }
+})
 
 // 期間を更新
 const updatePeriod = () => {
@@ -221,29 +209,23 @@ const updatePeriod = () => {
       break
   }
   
-  if (selectedPeriod.value !== 'custom') {
-    loadHistory()
-  }
-}
-
-// カスタム期間を更新
-const updateCustomPeriod = () => {
-  if (customStartDate.value && customEndDate.value) {
-    startDate.value = new Date(customStartDate.value)
-    endDate.value = new Date(customEndDate.value)
-    loadHistory()
-  }
+  loadHistory()
 }
 
 // 履歴を読み込み
 const loadHistory = async () => {
   loading.value = true
   try {
-    const schedules = await getSchedules(
+    let schedules = await getSchedules(
       startDate.value,
       endDate.value,
       selectedUserId.value || undefined
     )
+    
+    // ステータスでフィルター
+    if (selectedStatus.value) {
+      schedules = schedules.filter(s => s.status === selectedStatus.value)
+    }
     
     // 開始日時の降順でソート
     historySchedules.value = schedules.sort((a, b) => 

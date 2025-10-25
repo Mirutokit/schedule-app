@@ -6,20 +6,20 @@
 </template>
 
 <script setup lang="ts">
-const { initAuth } = useAuth()
+const { initAuth, user } = useAuth()
+const router = useRouter()
 
-// アプリ起動時に認証状態を初期化
 onMounted(async () => {
   await initAuth()
+  
+  // ルートパスにアクセスした場合の処理
+  if (window.location.pathname === '/') {
+    if (user.value) {
+      // 認証済み → ダッシュボードへ（そのまま）
+    } else {
+      // 未認証 → ウェルカムページへ
+      router.push('/welcome')
+    }
+  }
 })
 </script>
-
-<style>
-body {
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-}
-</style>
