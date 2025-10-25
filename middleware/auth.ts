@@ -7,13 +7,19 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return
   }
 
-  // 未認証の場合はログインページへリダイレクト
-  if (!user.value && to.path !== '/login' && to.path !== '/register') {
-    return navigateTo('/login')
-  }
-
-  // 認証済みでログインページにアクセスした場合はホームへ
-  if (user.value && (to.path === '/login' || to.path === '/register')) {
-    return navigateTo('/')
+  // 未認証の場合
+  if (!user.value) {
+    // ログイン・登録・ウェルカムページ以外はウェルカムページへ
+    const publicPages = ['/login', '/register', '/welcome']
+    if (!publicPages.includes(to.path)) {
+      return navigateTo('/welcome')
+    }
+  } else {
+    // 認証済みの場合
+    // ログイン・登録・ウェルカムページにアクセスしたらダッシュボードへ
+    const authPages = ['/login', '/register', '/welcome']
+    if (authPages.includes(to.path)) {
+      return navigateTo('/')
+    }
   }
 })
