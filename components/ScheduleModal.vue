@@ -1,20 +1,20 @@
-<!-- components/ScheduleModal.vue -->
+<!-- components/ScheduleModal.vue の template 部分を更新 -->
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
     <!-- 背景オーバーレイ -->
     <div class="fixed inset-0 bg-black bg-opacity-50" @click="close"></div>
     
     <!-- モーダル本体 -->
-    <div class="flex min-h-full items-center justify-center p-4">
-      <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
         <!-- ヘッダー -->
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-semibold text-gray-900">
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-900">
             {{ editingSchedule ? '予定を編集' : '予定を登録' }}
           </h3>
           <button
             @click="close"
-            class="text-gray-400 hover:text-gray-600"
+            class="text-gray-400 hover:text-gray-600 p-1"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -35,7 +35,7 @@
                 v-model="form.title"
                 type="text"
                 required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="例: オフィス勤務"
               />
             </div>
@@ -49,7 +49,7 @@
                 id="description"
                 v-model="form.description"
                 rows="3"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="詳細な説明を入力..."
               ></textarea>
             </div>
@@ -64,7 +64,7 @@
                 v-model="form.startTime"
                 type="datetime-local"
                 required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -78,7 +78,7 @@
                 v-model="form.endTime"
                 type="datetime-local"
                 required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -89,18 +89,18 @@
           </div>
 
           <!-- ボタン -->
-          <div class="flex gap-3 mt-6">
+          <div class="flex flex-col sm:flex-row gap-3 mt-6">
             <button
               type="button"
               @click="close"
-              class="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              class="w-full sm:flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 order-2 sm:order-1"
             >
               キャンセル
             </button>
             <button
               type="submit"
               :disabled="loading"
-              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full sm:flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
             >
               {{ loading ? '保存中...' : '保存' }}
             </button>
@@ -110,6 +110,8 @@
     </div>
   </div>
 </template>
+
+<!-- script は変更なし -->
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
