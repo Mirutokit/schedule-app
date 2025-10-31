@@ -4,9 +4,10 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  updatePassword,
   type User
 } from 'firebase/auth'
-import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'
 
 export const useAuth = () => {
   const { $auth, $db } = useNuxtApp()
@@ -104,6 +105,41 @@ export const useAuth = () => {
       throw e
     }
   }
+  
+  // プロフィール更新
+  const updateProfile = async (userId: string, data: { displayName?: string; role?: string }) => {
+    try {
+      error.value = null
+      const userRef = doc($db, 'users', userId)
+      await updateDoc(userRef, {
+        ...data,
+        updatedAt: new Date()
+      })
+    } catch (e: any) {
+      console.error('プロフィール更新エラー:', e)
+      error.value = 'プロフィールの更新に失敗しました'
+      throw e
+    }
+  }
+
+  // パスワード変更
+  const changePassword = async (newPassword: string) => {
+    try {
+      error.value = null
+      if (!user.value) {
+        throw new Error('ユーザーが認証されていません')
+      }
+      await updatePassword(user.value, newPassword)
+    } catch (e: any) {
+      console.error('パスワード変更エラー:', e)
+      if (e.code === 'auth/requires-recent-login') {
+        error.value = 'セキュリティのため、再度ログインしてください'
+      } else {
+        error.value = 'パスワードの変更に失敗しました'
+      }
+      throw e
+    }
+  }
 
   return {
     user,
@@ -113,6 +149,8 @@ export const useAuth = () => {
     getUserData,
     login,
     register,
-    logout
+    logout,
+    updateProfile,
+    changePassword
   }
 }

@@ -175,6 +175,52 @@ export const useSchedule = () => {
     }
   }
 
+  // 特定ユーザーの今後の予定を取得
+  const getUserUpcomingSchedules = async (userId: string) =>{
+    try {
+      const now = new Date()
+      const q =query(
+        collection($db, 'schedules'),
+        where('usrId','==',userId),
+        where('startTime','>=', Timestamp.fromDate(now)),
+        orderBy('startTime','asc')
+      )
+
+      const snapshot = await getDocs(q)
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Schedule[]
+    } catch (error) {
+      console.error('予定取得エラー',error)
+      return []
+    }
+  }
+
+  // 特定ユーザーの過去の予定を取得
+  const getUserPastSchedules = async (userId: string, limit: number = 10) => {
+    try {
+      const now = new Date()
+      const q = query(
+        collection($db, 'schedules'),
+        where('userId', '==', userId),
+        where('startTime', '<', Timestamp.fromDate(now)),
+        orderBy('startTime', 'desc')
+      )
+      
+      const snapshot = await getDocs(q)
+      const schedules = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Schedule[]
+      
+      return schedules.slice(0, limit)
+    } catch (error) {
+      console.error('過去の予定取得エラー:', error)
+      return []
+    }
+  }
+
   return {
     createSchedule,
     updateSchedule,
@@ -183,6 +229,8 @@ export const useSchedule = () => {
     getSchedules,
     getTodaySchedules,
     subscribeToSchedules,
-    getAllUsers
+    getAllUsers,
+    getUserUpcomingSchedules,
+    getUserPastSchedules
   }
 }
